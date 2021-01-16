@@ -9,7 +9,7 @@ class CephaloBase(BaseModel):
 
 # Properties to receive on cephalo item creation
 class CephaloCreate(CephaloBase):
-    file_path: string
+    file_path: str
     px_per_cm: int
 
 # Properties to receive on cephalo item update
@@ -19,7 +19,7 @@ class CephaloUpdate(CephaloBase):
 # Properties shared by models stored in db
 class CephaloInDBBase(CephaloBase):
     id: int
-    file_path: string
+    file_path: str
     px_per_cm: int
 
     class Config:
@@ -31,5 +31,5 @@ class Cephalo(CephaloInDBBase):
 
 
 # Properties stored in DB
-class CephaloInDB(CephaloInDB):
+class CephaloInDB(CephaloInDBBase):
     pass

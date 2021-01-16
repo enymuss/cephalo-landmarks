@@ -18,7 +18,7 @@ class CRUDCephalo(CRUDBase[Cephalo, CephaloCreate, CephaloUpdate]):
         return db_obj
 
     def update(
-        self, db:Session, *, db_obj: Cephalo, obj_in Union[CephaloUpdate, Dict[str, Any]]
+        self, db:Session, *, db_obj: Cephalo, obj_in: Union[CephaloUpdate, Dict[str, Any]]
     ) -> Cephalo:
         if isinstance(obj_in, dict):
             update_data = obj_in
