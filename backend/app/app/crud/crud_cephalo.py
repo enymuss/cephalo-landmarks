@@ -7,14 +7,17 @@ from app.models.cephalo import Cephalo
 from app.schemas.cephalo import CephaloCreate, CephaloUpdate
 
 class CRUDCephalo(CRUDBase[Cephalo, CephaloCreate, CephaloUpdate]):
-    def create(self, db: Session, *, obj_in: CephaloCreate) -> Cephalo:
+    def create(self, db: Session, *, obj_in: CephaloCreate, file_path: str) -> Cephalo:
         db_obj = Cephalo(
-            file_path=obj_in.file_path,
+            file_path=file_path,
             px_per_cm=obj_in.px_per_cm,
         )
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+
+        # load the model and do calculations
+
         return db_obj
 
     def update(
