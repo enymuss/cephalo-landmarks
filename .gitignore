@@ -4,3 +4,7 @@ docker-stack.yml
 .DS_Store
 backend/app/uploads
 backend/app/nn_models
+*.pt
+.pyc
+.jpg
+.jpeg
