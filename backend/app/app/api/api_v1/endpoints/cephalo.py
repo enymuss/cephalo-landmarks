@@ -38,13 +38,13 @@ async def create_prediction(
     """
     Create new cephalo prediction.
     """
-    saved_file_path = os.path.join(UPLOAD_FOLDER, "destination.png")
+    saved_file_path = os.path.join(UPLOAD_FOLDER, "destination.jpg")
     with open(saved_file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     # item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=current_user.id)
     cephalo = crud.cephalo.create(db=db, obj_in=cephalo_in, file_path=saved_file_path)
     # print({"cephalo filename": file.filename})
-    for i in range(1):
+    for i in range(0, 20):
         celery_app.send_task("app.worker.cephalo_celery", args=[cephalo.id, saved_file_path, i])
     return cephalo

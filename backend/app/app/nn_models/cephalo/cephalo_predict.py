@@ -29,7 +29,10 @@ def show_landmarks(image, landmarks, ground_truth=None):
 
 def get_prediction(img_path: str, landmark: int) -> Tuple[float, float]:
     levels = 6
-    path = os.path.join(os.getcwd(), "app", "nn_models/cephalo/models/big_cephalo_0_0")
+    if landmark not in range(0, 20):
+        print ("Landmark out of range")
+        raise ValueError
+    path = os.path.join(os.getcwd(), "app", "nn_models", "cephalo", "models", f"big_cephalo_{landmark}_1")
     setting = {"loadpath": path}
     device = 'cpu'
     model = m.load_model(levels=levels, name=setting["loadpath"], device=device, load=True)
