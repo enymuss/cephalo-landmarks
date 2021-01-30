@@ -16,8 +16,6 @@ class CRUDCephalo(CRUDBase[Cephalo, CephaloCreate, CephaloUpdate]):
         db.commit()
         db.refresh(db_obj)
 
-        # load the model and do calculations
-
         return db_obj
 
     def update(

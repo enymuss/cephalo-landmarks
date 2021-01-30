@@ -40,6 +40,57 @@ ISBI_TO_CEPHALO_MAPPING = {
 "Incision superius"        : {'isbi': 11, 'cephalo': None},
 "Lower lip"                : {'isbi': 13, 'cephalo': None}
 }
+TEXTBOOK_LANDMARKS = {
+"S":    "Sella",
+"Ba":   "Basion",
+"N":    "Nasion",
+"Sp":   "Spina nasalis anterior",
+"A":    "Puntk A",
+"Pm":   "Pterygomaxillare",
+"Iss":  "Incision superius",
+"Isa":  "Apex zęba siecznego szczęki",
+"B":    "Punkt B",
+"Pg":   "Pogonion",
+"Gn":   "Gnathion",
+"Iis":  "Incision inferius",
+"Iia":  "Apex zęba siecznego żuchwy",
+"Ar":   "Articulare",
+"tgo":  "Gonion",
+"Sp'":  "Spina'",
+"WPg":  "Skórny punkt pogonion",
+"UL":   "Punkt wargi górnej",
+"Sn":   "Subnasale",
+"ctg":  "Columella",
+}
+
+CEPHALO_TO_TEXTBOOK_MAPPING = [
+    {'cephalo': 0, 'textbook': "ctg"},
+    {'cephalo': 1, 'textbook': "Sn"},
+    {'cephalo': 2, 'textbook': ""},
+    {'cephalo': 3, 'textbook': "Pg"},
+    {'cephalo': 4, 'textbook': "N"},
+    {'cephalo': 5, 'textbook': ""},
+    {'cephalo': 6, 'textbook': ""},
+    {'cephalo': 7, 'textbook': "B"},
+    {'cephalo': 8, 'textbook': ""},
+    {'cephalo': 9, 'textbook': "Gn"},
+    {'cephalo': 10, 'textbook': ""},
+    {'cephalo': 11, 'textbook': ""},
+    {'cephalo': 12, 'textbook': ""},
+    {'cephalo': 13, 'textbook': ""},
+    {'cephalo': 14, 'textbook': "S"},
+    {'cephalo': 15, 'textbook': "Ar"},
+    {'cephalo': 16, 'textbook': "Ba"},
+    {'cephalo': 17, 'textbook': ""},
+    {'cephalo': 18, 'textbook': ""},
+    {'cephalo': 19, 'textbook': ""},
+]
+
+def cephalo_landamrk_from_textbook_acronym(acronym):
+    for landmark in CEPHALO_TO_TEXTBOOK_MAPPING:
+        if landmark["textbook"] == acronym :
+            return landmark["cephalo"]
+    return None
 
 def filter_and_sort_isbi_to_cephalo_mapping():
     mapping_list = [(k, v["isbi"], v["cephalo"]) for k, v in ISBI_TO_CEPHALO_MAPPING.items()]
