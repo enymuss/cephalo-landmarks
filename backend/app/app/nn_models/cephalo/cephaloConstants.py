@@ -86,6 +86,12 @@ CEPHALO_TO_TEXTBOOK_MAPPING = [
     {'cephalo': 19, 'textbook': ""},
 ]
 
+angles_list = [["S", "N", "A"], ["S", "N", "B"],
+                ["A", "N", "B"], ["S", "N", "Pg"],
+                ["ML", "NSL"], ["NL", "NSL"],
+                ["ML", "NL"], ["Gn", "tgo", "Ar"],
+                ["N", "S", "Ba"], ["IUpper", "NA"], ["ILower", "NB"]]
+
 def cephalo_landamrk_from_textbook_acronym(acronym):
     for landmark in CEPHALO_TO_TEXTBOOK_MAPPING:
         if landmark["textbook"] == acronym :
