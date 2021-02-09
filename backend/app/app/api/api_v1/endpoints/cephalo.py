@@ -28,6 +28,21 @@ def read_landmarks_for_cephalo(
     landmarks = crud.landmark.get_landmarks_by_cephalo(db=db, cephalo_id=cephalo_id)
     return landmarks
 
+@router.get("/measurements", response_model=List[schemas.Measurement])
+def read_cephalo_measurements(
+    *,
+    db: Session = Depends(deps.get_db),
+    cephalo_id: int,
+) -> Any:
+    """
+    Retrive all measurements for given cephalometric image by id.
+    """
+
+    # get measurments, if measuremnt is nil, create them and return them
+
+    measurements = crud.measurements.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
+    return measurements
+
 @router.post("/predict", response_model=schemas.Cephalo, status_code=201)
 async def create_prediction(
     *,
