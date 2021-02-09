@@ -90,7 +90,8 @@ angles_list = [["S", "N", "A"], ["S", "N", "B"],
                 ["A", "N", "B"], ["S", "N", "Pg"],
                 ["ML", "NSL"], ["NL", "NSL"],
                 ["ML", "NL"], ["Gn", "tgo", "Ar"],
-                ["N", "S", "Ba"], ["IUpper", "NA"], ["ILower", "NB"]]
+                ["N", "S", "Ba"]]
+distance_list = [["U1", "NA"], ["L1", "NB"]]
 
 def cephalo_landamrk_from_textbook_acronym(acronym):
     for landmark in CEPHALO_TO_TEXTBOOK_MAPPING:

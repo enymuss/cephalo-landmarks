@@ -15,20 +15,10 @@ def angle_between_points(pointA, pointB, pointC):
     bc = c - b
     return angle_between_vectors(ba, bc)
 
-def clockwise_angle_between_points(pointA, pointB, pointC):
-    a = np.array(pointA)
-    b = np.array(pointB)
-    c = np.array(pointC)
-    ba = a - b
-    bc = c - b
-
-    inner_angle = angle_between_vectors(ba, bc)
-    det = np.linalg.det([ba, bc])
-
-    if det<0:
-        return inner_angle
-    else:
-        return 360-inner_angle
+def angle_between_vectors(vectorA, vectorB):
+    cosine_angle = np.dot(vectorA, vectorB) / (np.linalg.norm(vectorA) * np.linalg.norm(vectorB))
+    angle = np.arccos(cosine_angle)
+    return np.degrees(angle)
 
 def cclockwise_angle_between_points(pointA, pointB, pointC):
     a = np.array(pointA)
@@ -44,11 +34,6 @@ def cclockwise_angle_between_points(pointA, pointB, pointC):
         return inner_angle
     else:
         return 360-inner_angle
-
-def angle_between_vectors(vectorA, vectorB):
-    cosine_angle = np.dot(vectorA, vectorB) / (np.linalg.norm(vectorA) * np.linalg.norm(vectorB))
-    angle = np.arccos(cosine_angle)
-    return np.degrees(angle)
 
 def xy_for_landmark(landmarks_list):
     point_list = []
@@ -68,18 +53,18 @@ def plot_landmarks_on_ax(landmark_xy, ax):
     theta2 = 360
 
     cephalo_angle  = angle_between_points(landmark_xy[0],landmark_xy[1],landmark_xy[2])
-    angle_arc_A = angle_between_points((landmark_xy[1] + [r, 0]), landmark_xy[1], landmark_xy[0])
-    angle_arc_C = angle_between_points((landmark_xy[1] + [r, 0]), landmark_xy[1], landmark_xy[2])
 
     cclw_arc_a = cclockwise_angle_between_points((landmark_xy[1] + [r, 0]), landmark_xy[1], landmark_xy[0])
     cclw_arc_c = cclockwise_angle_between_points((landmark_xy[1] + [r, 0]), landmark_xy[1], landmark_xy[2])
 
     ax.plot(landmark_xy[:, 0], landmark_xy[:, 1], 'ro-')
 
-    if (angle_arc_A < cephalo_angle and angle_arc_C < cephalo_angle):
+    if (abs(cclw_arc_a-cclw_arc_c) > 180):
+        # arc default starting point is inside angle
         angle = max(cclw_arc_a, cclw_arc_c)
         theta2 = min(cclw_arc_a, cclw_arc_c)
     else:
+        # arc default starting point is outisde angle
         angle = min(cclw_arc_a, cclw_arc_c)
         theta2 = max(cclw_arc_a, cclw_arc_c)
 
@@ -106,7 +91,6 @@ for angle in cephaloConstants.angles_list:
     possible_angles.append(angle)
 
 print(possible_angles)
-# pointAngle = possible_angles[0]
 
 fig = plt.figure()
 ax = fig.add_subplot(1, 1, 1)
