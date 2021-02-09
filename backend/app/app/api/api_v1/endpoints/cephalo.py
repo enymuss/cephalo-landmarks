@@ -38,10 +38,25 @@ def read_cephalo_measurements(
     Retrive all measurements for given cephalometric image by id.
     """
 
-    # get measurments, if measuremnt is nil, create them and return them
+    measurements = crud.measurement.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
+    if (len(measurements) == 0):
+        crud.measurement.create_with_cephalo(db=db, cephalo_id=cephalo_id)
 
-    measurements = crud.measurements.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
+        measurements = crud.measurement.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
+
     return measurements
+
+@router.post("/measurements", response_model=schemas.Measurement)
+def create_item(
+    *,
+    db: Session = Depends(deps.get_db),
+    cephalo_id: int,
+) -> Any:
+    """
+    Create new measurement.
+    """
+    measurement = crud.measurement.create_with_cephalo(db=db, cephalo_id=cephalo_id)
+    return measurement
 
 @router.post("/predict", response_model=schemas.Cephalo, status_code=201)
 async def create_prediction(

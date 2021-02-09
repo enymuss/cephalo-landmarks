@@ -2,6 +2,7 @@
 # IMG_SIZE_ROUNDED_TO_64 = {'width': 2304, 'height': 2304}
 # IMAGE_PATH='data/2304'
 import os
+import numpy as np
 
 IMG_SIZE_ORIGINAL = {'width': 502, 'height': 512}
 IMG_SIZE_ROUNDED_TO_64 = {'width': 512, 'height': 512}
@@ -66,23 +67,23 @@ TEXTBOOK_LANDMARKS = {
 CEPHALO_TO_TEXTBOOK_MAPPING = [
     {'cephalo': 0, 'textbook': "ctg"},
     {'cephalo': 1, 'textbook': "Sn"},
-    {'cephalo': 2, 'textbook': ""},
-    {'cephalo': 3, 'textbook': "Pg"},
+    {'cephalo': 2, 'textbook': "UL"},
+    {'cephalo': 3, 'textbook': "WPg"},
     {'cephalo': 4, 'textbook': "N"},
-    {'cephalo': 5, 'textbook': ""},
+    {'cephalo': 5, 'textbook': "Sp"},
     {'cephalo': 6, 'textbook': ""},
     {'cephalo': 7, 'textbook': "B"},
-    {'cephalo': 8, 'textbook': ""},
+    {'cephalo': 8, 'textbook': "Pg"},
     {'cephalo': 9, 'textbook': "Gn"},
-    {'cephalo': 10, 'textbook': ""},
-    {'cephalo': 11, 'textbook': ""},
-    {'cephalo': 12, 'textbook': ""},
-    {'cephalo': 13, 'textbook': ""},
+    {'cephalo': 10, 'textbook': "Isa"},
+    {'cephalo': 11, 'textbook': "Iss"},
+    {'cephalo': 12, 'textbook': "Iis"},
+    {'cephalo': 13, 'textbook': "Iia"},
     {'cephalo': 14, 'textbook': "S"},
     {'cephalo': 15, 'textbook': "Ar"},
     {'cephalo': 16, 'textbook': "Ba"},
     {'cephalo': 17, 'textbook': ""},
-    {'cephalo': 18, 'textbook': ""},
+    {'cephalo': 18, 'textbook': "tgo"},
     {'cephalo': 19, 'textbook': ""},
 ]
 
@@ -90,14 +91,54 @@ angles_list = [["S", "N", "A"], ["S", "N", "B"],
                 ["A", "N", "B"], ["S", "N", "Pg"],
                 ["ML", "NSL"], ["NL", "NSL"],
                 ["ML", "NL"], ["Gn", "tgo", "Ar"],
-                ["N", "S", "Ba"]]
-distance_list = [["U1", "NA"], ["L1", "NB"]]
+                ["N", "S", "Ba"],
+                ["U1", "NA"],
+                ["L1", "NB"],
+                ["U1", "L1"]]
+angle_keys  = {
+    "ML": ["tgo", "Gn"],
+    "NSL" : ["N", "S"],
+    "NL": ["Sp", "Pg"],
+    "U1": ["Isa", "Iss"],
+    "L1": ["Iis", "Iia"],
+    "NB" : ["N", "B"],
+    "NA" : ["N", "A"]
+}
+distance_list = [["U1", "NA"], ["L1", "NB"], ["Pg", "NB"]]
 
 def cephalo_landamrk_from_textbook_acronym(acronym):
     for landmark in CEPHALO_TO_TEXTBOOK_MAPPING:
-        if landmark["textbook"] == acronym :
+        if landmark["textbook"] == acronym:
             return landmark["cephalo"]
     return None
+
+def acronym_to_landmark_ids(acronym):
+    landmark_ids = []
+
+    if acronym in angle_keys:
+        for aacronym in angle_keys[acronym]:
+            landmark_ids.append(cephalo_landamrk_from_textbook_acronym(aacronym))
+    else:
+        landmark_ids.append(cephalo_landamrk_from_textbook_acronym(acronym))
+
+    return landmark_ids
+
+
+def can_calculate_measurement(measurement_item):
+    for acronym in measurement_item:
+        if acronym in angle_keys:
+            for aacronym in angle_keys[acronym]:
+                if cephalo_landamrk_from_textbook_acronym(aacronym) is None:
+                    return False
+        elif (cephalo_landamrk_from_textbook_acronym(acronym) is None):
+            return False
+    return True
+
+def calculate_angle(measurement_item):
+    return 10
+
+def calculate_distance(measurement_item):
+    return 11
 
 def filter_and_sort_isbi_to_cephalo_mapping():
     mapping_list = [(k, v["isbi"], v["cephalo"]) for k, v in ISBI_TO_CEPHALO_MAPPING.items()]
@@ -120,3 +161,25 @@ def cephalo_landmarks():
             valid_mapping_list.append(points_tuple)
 
     return sorted(valid_mapping_list, key=lambda x: x[1])
+
+def angle_between_three_points(pointA, pointB, pointC):
+    a = np.array(pointA)
+    b = np.array(pointB)
+    c = np.array(pointC)
+    ba = a - b
+    bc = c - b
+    return angle_between_vectors(ba, bc)
+
+def angle_between_vectors(vectorA, vectorB):
+    cosine_angle = np.dot(vectorA, vectorB) / (np.linalg.norm(vectorA) * np.linalg.norm(vectorB))
+    angle = np.arccos(cosine_angle)
+    return np.degrees(angle)
+
+def angle_between_four_points(pointA, pointB, pointC, pointD):
+    a = np.array(pointA)
+    b = np.array(pointB)
+    c = np.array(pointC)
+    d = np.array(pointD)
+    ba = a - b
+    dc = c - d
+    return angle_between_vectors(ba, dc)

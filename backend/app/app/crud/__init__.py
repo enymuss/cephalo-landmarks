@@ -2,7 +2,7 @@ from .crud_item import item
 from .crud_user import user
 from .crud_cephalo import cephalo
 from .crud_cephalo_landmark import landmark
-from .crud_cephalo_measurements import measurement
+from .crud_cephalo_measurement import measurement
 
 # For a new basic set of CRUD operations you could just do
 
