@@ -8,26 +8,26 @@ import os
 import random
 
 landmark_positions = {
-    0:  [405.49937438964844, 272.74523162841797],
-    1:  [387.60816955566406, 285.80562591552734],
-    2:  [398.4422607421875, 321.87039947509766],
-    3:  [374.4025192260742, 397.9781494140625],
-    4:  [351.0680923461914, 170.67684173583984],
-    5:  [365.7011260986328, 282.8748970031738],
-    6:  [350.8236846923828, 299.27740478515625],
-    7:  [338.3203353881836, 373.30709075927734],
-    8:  [345.8814697265625, 400.583740234375],
-    9:  [341.8031768798828, 413.2873840332031],
-    10: [326.60467529296875, 291.38012313842773],
-    11: [372.9366149902344, 340.0787124633789],
-    12: [346.2404479980469, 327.7736053466797],
-    13: [328.77274322509766, 380.07271575927734],
-    14: [178.55220794677734, 202.44730377197266],
-    15: [143.0613250732422, 275.24500465393066],
-    16: [121.09426879882812, 298.36219024658203],
-    17: [237.27423477172852, 292.23270416259766],
-    18: [182.96990966796875, 372.99903106689453],
-    19: [209.0761489868164, 377.26587677001953]
+    0: [406.1053 , 259.7082 ],
+    1: [385.68787, 273.8496 ],
+    2: [380.97614, 307.29517],
+    3: [375.81567, 366.55444],
+    4: [350.91086, 158.92255],
+    5: [365.49478, 268.01346],
+    6: [353.82767, 279.01233],
+    7: [345.52606, 350.39282],
+    8: [356.74442, 387.20538],
+    9: [350.2378 , 394.83728],
+    10: [335.33304, 270.37036],
+    11: [361.42194, 326.55368],
+    12: [346.92737, 314.68927],
+    13: [333.48203, 363.7037 ],
+    14: [183.37036, 189.1253 ],
+    15: [165.4823 , 255.     ],
+    16: [132.71904, 278.05554],
+    17: [236.56195, 278.8889 ],
+    18: [186.58408, 349.44446],
+    19: [209.90709, 354.72223]
 }
 
 def cclockwise_angle_between_points(pointA, pointB, pointC):
@@ -146,17 +146,71 @@ ax = fig.add_subplot(1, 1, 1)
 
 ax.imshow(Image.open(os.path.join("inputs", "images", "1000_1.jpg")))
 
-for pointAngle in possible_angles:
+# for pointAngle in possible_angles:
+#     landmark_xy = []
+#     for x in pointAngle:
+#         for id in cephaloConstants.acronym_to_landmark_ids(x):
+#             landmark_xy.append(landmark_positions[id])
+#
+#     landmark_xy = np.array(landmark_xy)
+#     if (len(landmark_xy) == 4):
+#         plot_four_landmarks_on_ax(landmark_xy, ax)
+#     else:
+#         # plot_landmarks_on_ax(landmark_xy, ax)
+#         continue
+
+possible_distances = []
+
+for measurement_points in cephaloConstants.distance_list:
+    if cephaloConstants.can_calculate_measurement(measurement_points):
+        possible_distances.append(measurement_points)
+
+print(possible_distances)
+
+px_per_cm = 27
+
+for line in possible_distances:
     landmark_xy = []
-    for x in pointAngle:
+    for x in line:
         for id in cephaloConstants.acronym_to_landmark_ids(x):
             landmark_xy.append(landmark_positions[id])
 
     landmark_xy = np.array(landmark_xy)
-    if (len(landmark_xy) == 4):
-        plot_four_landmarks_on_ax(landmark_xy, ax)
-    else:
+    print(landmark_xy)
+    if (len(landmark_xy) == 3):
         # plot_landmarks_on_ax(landmark_xy, ax)
         continue
+        ax.scatter(landmark_xy[0][0], landmark_xy[0][1])
+        ax.plot(landmark_xy[1:, 0], landmark_xy[1:, 1], 'bo-')
+        p1=landmark_xy[1]
+        p2=landmark_xy[2]
+        p3=landmark_xy[0]
+        d=np.cross(p2-p1,p3-p1)/np.linalg.norm(p2-p1)
+        distance = abs(d)
+        print(f"Distance: {distance} px, {distance*(1/px_per_cm)} cm")
+
+        dx, dy = p2-p1
+        det = dx*dx + dy*dy
+        a = (dy*(p3[1]-p1[1])+dx*(p3[0]-p1[0]))/det
+        p4 = [p1[0]+a*dx, p1[1]+a*dy]
+
+        plot_ABC_angle_info(p2, p4, p3, ax, 'go--')
+
+        # plot_four_landmarks_on_ax(landmark_xy, ax)
+    elif (len(landmark_xy) == 4):
+        p1 = landmark_xy[0]
+        p2 = landmark_xy[1]
+        p3 = landmark_xy[2]
+        p4 = landmark_xy[3]
+
+        d=np.cross(p2-p1,p4-p3)/np.linalg.norm(p2-p1)
+        distance = abs(d)
+        print(f"Distance: {distance} px, {distance*(1/px_per_cm)} cm")
+        # import pdb; pdb.set_trace()
+        ax.plot(landmark_xy[:2, 0], landmark_xy[:2, 1], 'o-')
+        ax.plot(landmark_xy[2:, 0], landmark_xy[2:, 1], 'o-')
+
+
+    #     continue
 
 plt.show()
