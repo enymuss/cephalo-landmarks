@@ -133,9 +133,6 @@ def plot_four_landmarks_on_ax(landmark_xy, ax):
     plot_ABC_angle_info(segment1_point_closest_to_intersection, intersection, segment2_point_closest_to_intersection, ax, 'go--')
 
 
-# landmarks_pd = pd.read_csv('./inputs/cephalo_landmarks.csv')
-# one_file_series = landmarks_pd.loc[0, :]
-#
 possible_angles = []
 
 for measurement_points in cephaloConstants.angles_list:
@@ -152,7 +149,6 @@ ax.imshow(Image.open(os.path.join("inputs", "images", "1000_1.jpg")))
 for pointAngle in possible_angles:
     landmark_xy = []
     for x in pointAngle:
-        # print(x, cephaloConstants.acronym_to_landmark_ids(x))
         for id in cephaloConstants.acronym_to_landmark_ids(x):
             landmark_xy.append(landmark_positions[id])
 
