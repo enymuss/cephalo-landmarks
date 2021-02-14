@@ -16,6 +16,17 @@ Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
 
 router = APIRouter()
 
+@router.get("/cephalo/{id}", response_model=schemas.Cephalo)
+def read_cephalo(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+) -> Any:
+    "Get cephalo data from db"
+    return crud.cephalo.get(db, id)
+
+
+
 @router.get("/landmarks", response_model=List[schemas.Landmark])
 def read_landmarks_for_cephalo(
     *,
@@ -40,11 +51,43 @@ def read_cephalo_measurements(
 
     measurements = crud.measurement.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
     if (len(measurements) == 0):
-        crud.measurement.create_with_cephalo(db=db, cephalo_id=cephalo_id)
-
+        result = crud.measurement.create_with_cephalo(db=db, cephalo_id=cephalo_id)
+        if result is None:
+            raise HTTPException(status_code=404, detail="Landmarks not found")
         measurements = crud.measurement.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
 
     return measurements
+
+@router.put("/measurements", response_model=List[schemas.Measurement])
+def put_cephalo_measurements(
+    *,
+    db: Session = Depends(deps.get_db),
+    cephalo_id: int,
+) -> Any:
+    """
+    Recalculate all measurements for given cephalometric image by id.
+    """
+    crud.measurement.remove(db=db, cephalo_id=cephalo_id)
+    result = crud.measurement.create_with_cephalo(db=db, cephalo_id=cephalo_id)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Landmarks not found")
+    measurements = crud.measurement.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
+
+    return measurements
+
+@router.delete("/measurements/{cephalo_id}", response_model=List[schemas.Measurement])
+def delete_cephalo_measurements(
+    *,
+    db:Session = Depends(deps.get_db),
+    cephalo_id: int
+) -> Any:
+    "Delete All measurements for given cephalo_id"
+    measurements = crud.measurement.get_measurements_by_cephalo(db=db, cephalo_id=cephalo_id)
+    if not measurements:
+        raise HTTPException(status_code=404, detail="Measurements not found")
+
+    item = crud.measurement.remove(db=db, cephalo_id=cephalo_id)
+    return item
 
 @router.post("/measurements", response_model=schemas.Measurement)
 def create_item(

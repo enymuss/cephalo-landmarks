@@ -134,11 +134,26 @@ def can_calculate_measurement(measurement_item):
             return False
     return True
 
-def calculate_angle(measurement_item):
-    return 10
+def calculate_distance(px_per_cm, pointA, pointB, pointC, pointD=None):
+    distance = 0
 
-def calculate_distance(measurement_item):
-    return 11
+
+    if pointD is None:
+        p1 = np.array(pointA)
+        p2 = (pointB)
+        p3 = (pointC)
+        distance=np.cross(p2-p1,p3-p1)/np.linalg.norm(p2-p1)
+
+    else:
+        p1 = np.array(pointA)
+        p2 = np.array(pointB)
+        p3 = np.array(pointC)
+        p4 = np.array(pointD)
+
+        distance=np.cross(p2-p1,p4-p3)/np.linalg.norm(p2-p1)
+
+    distance = abs(distance) * 1/px_per_cm
+    return distance
 
 def filter_and_sort_isbi_to_cephalo_mapping():
     mapping_list = [(k, v["isbi"], v["cephalo"]) for k, v in ISBI_TO_CEPHALO_MAPPING.items()]
@@ -175,11 +190,56 @@ def angle_between_vectors(vectorA, vectorB):
     angle = np.arccos(cosine_angle)
     return np.degrees(angle)
 
+def point_of_line_intersection(pointA, pointB, pointC, pointD):
+    slope1 = (pointB[1] - pointA[1]) / (pointB[0] - pointA[0])
+    intercept1 = pointA[1] - (slope1*pointA[0])
+    slope2 = (pointD[1] - pointC[1]) / (pointD[0] - pointC[0])
+    intercept2 = pointC[1] - (slope2*pointC[0])
+
+    x = (intercept2 - intercept1) / (slope1 - slope2)
+    y = (slope1*x) + intercept1
+
+    return [x, y]
+
+def sort_points_from_intersection(pointA, pointB, intersection):
+    if (np.linalg.norm(intersection-pointA) < np.linalg.norm(intersection-pointB)):
+        point_closest_to_intersection = pointA
+        point_furthest_from_intersection = pointB
+    else:
+        point_closest_to_intersection = pointB
+        point_furthest_from_intersection = pointA
+
+    return point_closest_to_intersection, point_furthest_from_intersection
+
 def angle_between_four_points(pointA, pointB, pointC, pointD):
-    a = np.array(pointA)
-    b = np.array(pointB)
-    c = np.array(pointC)
-    d = np.array(pointD)
+    pointA = np.array(pointA)
+    pointB = np.array(pointB)
+    pointC = np.array(pointC)
+    pointD = np.array(pointD)
+
+    intersect_x, intersect_y = point_of_line_intersection(pointA, pointB, pointC, pointD)
+    intersection = [intersect_x, intersect_y]
+
+    segment1_point_closest_to_intersection, segment1_point_furthest_from_intersection = sort_points_from_intersection(pointA, pointB, intersection)
+    segment2_point_closest_to_intersection, segment2_point_furthest_from_intersection = sort_points_from_intersection(pointC, pointD, intersection)
+
+    a, b = segment1_point_closest_to_intersection, segment1_point_furthest_from_intersection
+    c, d = segment2_point_closest_to_intersection, segment2_point_furthest_from_intersection
     ba = a - b
     dc = c - d
     return angle_between_vectors(ba, dc)
+
+def cclockwise_angle_between_points(pointA, pointB, pointC):
+    a = np.array(pointA)
+    b = np.array(pointB)
+    c = np.array(pointC)
+    ba = a - b
+    bc = c - b
+
+    inner_angle = angle_between_vectors(ba, bc)
+    det = np.linalg.det([ba, bc])
+
+    if det>0:
+        return inner_angle
+    else:
+        return 360-inner_angle

@@ -30,31 +30,7 @@ landmark_positions = {
     19: [209.90709, 354.72223]
 }
 
-def cclockwise_angle_between_points(pointA, pointB, pointC):
-    a = np.array(pointA)
-    b = np.array(pointB)
-    c = np.array(pointC)
-    ba = a - b
-    bc = c - b
 
-    inner_angle = cephaloConstants.angle_between_vectors(ba, bc)
-    det = np.linalg.det([ba, bc])
-
-    if det>0:
-        return inner_angle
-    else:
-        return 360-inner_angle
-
-def point_of_line_intersection(pointA, pointB, pointC, pointD):
-    slope1 = (pointB[1] - pointA[1]) / (pointB[0] - pointA[0])
-    intercept1 = pointA[1] - (slope1*pointA[0])
-    slope2 = (pointD[1] - pointC[1]) / (pointD[0] - pointC[0])
-    intercept2 = pointC[1] - (slope2*pointC[0])
-
-    x = (intercept2 - intercept1) / (slope1 - slope2)
-    y = (slope1*x) + intercept1
-
-    return [x, y]
 
 def plot_landmarks_on_ax(landmark_xy, ax):
     plot_ABC_angle_info(landmark_xy[0], landmark_xy[1], landmark_xy[2], ax, 'ro-')
@@ -66,12 +42,13 @@ def plot_ABC_angle_info(pointA, pointB, pointC, ax, lineStyle='yo-'):
     r = min(40, max(np.linalg.norm(pointB-pointA), np.linalg.norm(pointB-pointC)))
 
     angle_deg = cephaloConstants.angle_between_three_points(pointA, pointB, pointC)
+    print("Cephalo Angle:", angle_deg)
 
     plot_points = np.array([pointA, pointB, pointC])
     ax.plot(plot_points[:, 0], plot_points[:, 1], lineStyle)
 
-    cclw_arc_a = cclockwise_angle_between_points((pointB + np.array([r, 0])), pointB, pointA)
-    cclw_arc_c = cclockwise_angle_between_points((pointB + np.array([r, 0])), pointB, pointC)
+    cclw_arc_a = cephaloConstants.cclockwise_angle_between_points((pointB + np.array([r, 0])), pointB, pointA)
+    cclw_arc_c = cephaloConstants.cclockwise_angle_between_points((pointB + np.array([r, 0])), pointB, pointC)
 
     if (abs(cclw_arc_a-cclw_arc_c) > 180):
         # arc default starting point is inside angle
@@ -95,30 +72,18 @@ def plot_ABC_angle_info(pointA, pointB, pointC, ax, lineStyle='yo-'):
     # ax.annotate(f"PointC", tuple(pointC))
 
 def plot_four_landmarks_on_ax(landmark_xy, ax):
-    intersect_x, intersect_y = point_of_line_intersection(landmark_xy[0], landmark_xy[1], landmark_xy[2], landmark_xy[3])
+    cephalo_angle  = cephaloConstants.angle_between_four_points(landmark_xy[0], landmark_xy[1], landmark_xy[2], landmark_xy[3])
+
+    intersect_x, intersect_y = cephaloConstants.point_of_line_intersection(pointA, pointB, pointC, pointD)
     intersection = [intersect_x, intersect_y]
 
-    if (np.linalg.norm(intersection-landmark_xy[0]) < np.linalg.norm(intersection-landmark_xy[1])):
-        segment1_point_closest_to_intersection = landmark_xy[0]
-        segment1_point_furthest_from_intersection = landmark_xy[1]
-    else:
-        segment1_point_closest_to_intersection = landmark_xy[1]
-        segment1_point_furthest_from_intersection = landmark_xy[0]
+    segment1_point_closest_to_intersection, _ = cephaloConstants.sort_points_from_intersection(landmark_xy[0], landmark_xy[1], intersection)
+    segment2_point_closest_to_intersection, _ = cephaloConstants.sort_points_from_intersection(landmark_xy[2], landmark_xy[3], intersection)
 
-    if (np.linalg.norm(intersection-landmark_xy[2]) < np.linalg.norm(intersection-landmark_xy[3])):
-        segment2_point_closest_to_intersection = landmark_xy[2]
-        segment2_point_furthest_from_intersection = landmark_xy[3]
-    else:
-        segment2_point_closest_to_intersection = landmark_xy[3]
-        segment2_point_furthest_from_intersection = landmark_xy[2]
-
-
-    cephalo_angle  = cephaloConstants.angle_between_four_points(segment1_point_closest_to_intersection, segment1_point_furthest_from_intersection,
-                                                                segment2_point_closest_to_intersection, segment2_point_furthest_from_intersection)
 
     cephalo_intersect_angle  = cephaloConstants.angle_between_three_points(segment1_point_closest_to_intersection,intersection,segment2_point_closest_to_intersection)
 
-    print(cephalo_angle)
+    # print("Cephalo Angle:", cephalo_angle)
 
     if round(cephalo_angle, 3) != round(cephalo_intersect_angle, 3):
         #draw arc for the obtuse angle
@@ -146,18 +111,19 @@ ax = fig.add_subplot(1, 1, 1)
 
 ax.imshow(Image.open(os.path.join("inputs", "images", "1000_1.jpg")))
 
-# for pointAngle in possible_angles:
-#     landmark_xy = []
-#     for x in pointAngle:
-#         for id in cephaloConstants.acronym_to_landmark_ids(x):
-#             landmark_xy.append(landmark_positions[id])
-#
-#     landmark_xy = np.array(landmark_xy)
-#     if (len(landmark_xy) == 4):
-#         plot_four_landmarks_on_ax(landmark_xy, ax)
-#     else:
-#         # plot_landmarks_on_ax(landmark_xy, ax)
-#         continue
+for pointAngle in possible_angles:
+    landmark_xy = []
+    for x in pointAngle:
+        for id in cephaloConstants.acronym_to_landmark_ids(x):
+            landmark_xy.append(landmark_positions[id])
+
+    landmark_xy = np.array(landmark_xy)
+    print("-".join(pointAngle))
+    if (len(landmark_xy) == 4):
+        plot_four_landmarks_on_ax(landmark_xy, ax)
+    else:
+        plot_landmarks_on_ax(landmark_xy, ax)
+        # continue
 
 possible_distances = []
 
@@ -185,9 +151,9 @@ for line in possible_distances:
         p1=landmark_xy[1]
         p2=landmark_xy[2]
         p3=landmark_xy[0]
-        d=np.cross(p2-p1,p3-p1)/np.linalg.norm(p2-p1)
-        distance = abs(d)
-        print(f"Distance: {distance} px, {distance*(1/px_per_cm)} cm")
+        distance = cephaloConstants.calculate_distance(px_per_cm, p1, p2, p3)
+
+        print(f"Distance: {distance} cm")
 
         dx, dy = p2-p1
         det = dx*dx + dy*dy
@@ -203,14 +169,12 @@ for line in possible_distances:
         p3 = landmark_xy[2]
         p4 = landmark_xy[3]
 
-        d=np.cross(p2-p1,p4-p3)/np.linalg.norm(p2-p1)
-        distance = abs(d)
-        print(f"Distance: {distance} px, {distance*(1/px_per_cm)} cm")
+        distance = cephaloConstants.calculate_distance(px_per_cm, p1, p2, p3, p4)
+
+        print(f"Distance: {distance} cm")
         # import pdb; pdb.set_trace()
         ax.plot(landmark_xy[:2, 0], landmark_xy[:2, 1], 'o-')
         ax.plot(landmark_xy[2:, 0], landmark_xy[2:, 1], 'o-')
-
-
     #     continue
 
-plt.show()
+# plt.show()
