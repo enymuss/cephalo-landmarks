@@ -1,6 +1,7 @@
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -8,15 +9,16 @@ from app.api import deps
 from app.core.celery_app import celery_app
 
 import shutil
+from PIL import Image
 import os
 from pathlib import Path
 
-UPLOAD_FOLDER = "./uploads/cephalo/"
+UPLOAD_FOLDER = "uploads/cephalo/"
 Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
 
 router = APIRouter()
 
-@router.get("/cephalo/{id}", response_model=schemas.Cephalo)
+@router.get("/cephalo/{id}")
 def read_cephalo(
     *,
     db: Session = Depends(deps.get_db),
@@ -25,7 +27,16 @@ def read_cephalo(
     "Get cephalo data from db"
     return crud.cephalo.get(db, id)
 
-
+@router.get("/images/{id}")
+def read_cephalo(
+    *,
+    db: Session = Depends(deps.get_db),
+    id: int,
+) -> Any:
+    "Get cephalo image from db"
+    file_path = crud.cephalo.get(db, id).file_path
+    file_path = os.path.join("/app", file_path)
+    return FileResponse(file_path)
 
 @router.get("/landmarks", response_model=List[schemas.Landmark])
 def read_landmarks_for_cephalo(
@@ -111,13 +122,17 @@ async def create_prediction(
     """
     Create new cephalo prediction.
     """
-    saved_file_path = os.path.join(UPLOAD_FOLDER, "destination.jpg")
+    saved_file_path = os.path.join(UPLOAD_FOLDER, file.filename)
     with open(saved_file_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
-    # item = crud.item.create_with_owner(db=db, obj_in=item_in, owner_id=current_user.id)
+    # downsize the file
+    im = Image.open(saved_file_path)
+    im.thumbnail((512, 512))
+    im.save(saved_file_path)
+
     cephalo = crud.cephalo.create(db=db, obj_in=cephalo_in, file_path=saved_file_path)
-    # print({"cephalo filename": file.filename})
+
     for i in range(0, 20):
         celery_app.send_task("app.worker.cephalo_celery", args=[cephalo.id, saved_file_path, i])
     return cephalo

@@ -53,7 +53,6 @@ class CephaloInDBBase(CephaloBase):
 class Cephalo(CephaloInDBBase):
     pass
 
-
 # Properties stored in DB
 class CephaloInDB(CephaloInDBBase):
     file_path: str
