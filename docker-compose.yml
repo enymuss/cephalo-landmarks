@@ -191,6 +191,19 @@ services:
         - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
         - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
 
+  model-frontend:
+    depends_on:
+      - backend
+    image: '${DOCKER_IMAGE_MODEL_FRONTEND?Variable not set}:${TAG-latest}'
+    build:
+      context: ./frontend/streamlit
+      args:
+        INSTALL_DEV: ${INSTALL_DEV-false}
+    ports:
+      - "8501:8501"
+    volumes:
+      - "./frontend/streamlit:/usr/src/"
+
 volumes:
   app-db-data:
 

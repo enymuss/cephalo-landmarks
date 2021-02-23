@@ -128,8 +128,11 @@ async def create_prediction(
 
     # downsize the file
     im = Image.open(saved_file_path)
+    max_dimension_large = max(im.size)
     im.thumbnail((512, 512))
+    max_dimension_thumbnail = max(im.size)
     im.save(saved_file_path)
+    cephalo_in.px_per_cm = int(round((cephalo_in.px_per_cm / (max_dimension_large/max_dimension_thumbnail))))
 
     cephalo = crud.cephalo.create(db=db, obj_in=cephalo_in, file_path=saved_file_path)
 
