@@ -11,17 +11,25 @@ import tempfile
 from . import cephaloConstants
 
 CEPHALO_EXAMPLES = {
-    "1000_1.jpg":"134",
-    "1001_1.jpg":"135",
-    "1002_1.jpg":"136",
-    "1003_1.jpg":"137",
-    "1004_1.jpg":"138",
-    "1005_1.jpg":"139",
-    "1006_1.jpg":"140",
-    "1007_1.jpg":"141",
-    "1008_1.jpg":"142",
-    "1009_1.jpg":"143",
+    "1000_1.jpg":"1",
+    "1001_1.jpg":"2",
+    "1002_1.jpg":"3",
+    "1003_1.jpg":"4",
+    "1004_1.jpg":"5",
+    "1005_1.jpg":"6",
+    "1006_1.jpg":"7",
+    "1007_1.jpg":"8",
+    "1008_1.jpg":"9",
+    "1009_1.jpg":"10",
 }
+
+def init():
+    for image_name in CEPHALO_EXAMPLES:
+        cephalo_id = get_cephalo(CEPHALO_EXAMPLES[image_name])
+        if cephalo_id is None:
+            post_params = {'file': (image_name, open(f'./input/cepahlo/images/{image_name}', 'rb'), 'image/jpeg')}
+            payload = {'px_per_cm': 27}
+            r = requests.post("http://backend/api/v1/cephalo/predict", files=post_params, data=payload)
 
 def get_measurements(cephalo_id):
     print(f"Getting measuemrents for {cephalo_id}")
@@ -29,8 +37,8 @@ def get_measurements(cephalo_id):
     return cephalo_response.json()
 
 def get_cephalo(cephalo_id):
-    measurements_response = requests.get(f"http://backend/api/v1/cephalo/cephalo/{cephalo_id}")
-    return measurements_response.json()
+    cephalo_response = requests.get(f"http://backend/api/v1/cephalo/cephalo/{cephalo_id}")
+    return cephalo_response.json()
 
 def get_image(cephalo_id):
     print(f"Getting cephalo for {cephalo_id}")
@@ -200,7 +208,9 @@ def Cephalo_Id():
 def run_cephalo_app():
     persist_cephalo_id = Cephalo_Id()
 
-    st.title("Cephalometric Landmarks3")
+    init()
+
+    st.title("Cephalometric Landmarks")
 
     st.write("The model marks 20 landmarks on a cephalometric xray for orthodontists.")
 

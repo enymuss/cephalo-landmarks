@@ -19,4 +19,4 @@ RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; els
 
 COPY . .
 
-CMD ["streamlit", "run", "streamlit-app.py"]
+CMD ["bash", "./streamlit-start.sh"]

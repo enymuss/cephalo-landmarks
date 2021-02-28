@@ -195,6 +195,8 @@ services:
     depends_on:
       - backend
     image: '${DOCKER_IMAGE_MODEL_FRONTEND?Variable not set}:${TAG-latest}'
+    env_file:
+      - .env
     build:
       context: ./frontend/streamlit
       args:

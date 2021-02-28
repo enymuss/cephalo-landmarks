@@ -10,3 +10,4 @@ backend/app/nn_models/cephalo/models
 *.jpg
 *.jpeg
 .env
+*.csv
