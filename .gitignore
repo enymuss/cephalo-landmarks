@@ -9,4 +9,4 @@ backend/app/nn_models/cephalo/models
 *.pyc
 *.jpg
 *.jpeg
-*.env
+.env
