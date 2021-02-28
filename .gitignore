@@ -3,8 +3,10 @@
 docker-stack.yml
 .DS_Store
 backend/app/uploads
-backend/app/nn_models
+backend/app/nn_models/cephalo/inputs
+backend/app/nn_models/cephalo/models
 *.pt
-.pyc
-.jpg
-.jpeg
+*.pyc
+*.jpg
+*.jpeg
+*.env
