@@ -189,7 +189,7 @@ services:
         - traefik.enable=true
         - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
         - traefik.http.routers.${STACK_NAME?Variable not set}-frontend-http.rule=PathPrefix(`/`)
-        - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=80
+        - traefik.http.services.${STACK_NAME?Variable not set}-frontend.loadbalancer.server.port=81
 
   model-frontend:
     depends_on:
@@ -201,10 +201,14 @@ services:
       context: ./frontend/streamlit
       args:
         INSTALL_DEV: ${INSTALL_DEV-false}
-    ports:
-      - "8501:8501"
     volumes:
       - "./frontend/streamlit:/usr/src/"
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.constraint-label-stack=${TRAEFIK_TAG?Variable not set}
+        - traefik.http.routers.${STACK_NAME?Variable not set}-model-frontend-http.rule=PathPrefix(`/`)
+        - traefik.http.services.${STACK_NAME?Variable not set}-model-frontend.loadbalancer.server.port=8501
 
 volumes:
   app-db-data:
